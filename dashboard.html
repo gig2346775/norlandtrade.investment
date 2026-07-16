@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Norland Investment</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="dashboard-page">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-text-main">NORLAND</div>
+        <div class="sidebar-logo-text-sub">Investment</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="active" onclick="switchTab('overview',this)" data-tab="overview">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Overview</span>
+      </button>
+      <button onclick="switchTab('invest',this)" data-tab="invest">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Invest</span>
+      </button>
+      <button onclick="switchTab('blog',this)" data-tab="blog">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Read &amp; Earn</span>
+      </button>
+      <button onclick="switchTab('goal',this)" data-tab="goal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        <span>My Goal</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="sidebar-avatar" id="sidebar-avatar">--</div>
+        <div class="sidebar-user-text">
+          <div class="name" id="sidebar-name">—</div>
+          <div class="email" id="sidebar-email">—</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="dash-main">
+
+    <!-- Mobile top bar -->
+    <div class="dash-topbar">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="dash-topbar-logo">
+        <div class="sidebar-logo-icon" style="width:30px;height:30px">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span style="font-family:var(--font-serif);font-weight:700;font-size:1rem">NORLAND</span>
+      </div>
+      <div id="topbar-avatar" class="sidebar-avatar" style="margin-left:auto">--</div>
+    </div>
+
+    <div class="dash-header">
+      <h1 id="welcome-msg">Welcome back 👋</h1>
+      <p>Here's your investment dashboard for today.</p>
+    </div>
+
+    <!-- ===== OVERVIEW TAB ===== -->
+    <div id="tab-overview" class="dash-tab active">
+
+      <div class="stat-grid">
+        <div class="dash-stat highlight">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <div class="lbl">Total Balance</div>
+          <div class="val" id="stat-balance">₦0</div>
+        </div>
+        <div class="dash-stat">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          <div class="lbl">Total Invested</div>
+          <div class="val" id="stat-invested">₦0</div>
+        </div>
+        <div class="dash-stat">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          <div class="lbl">Total Earned</div>
+          <div class="val" id="stat-earned">₦0</div>
+        </div>
+        <div class="dash-stat">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <div class="lbl">Blog Earnings</div>
+          <div class="val" id="stat-blog">₦0</div>
+        </div>
+      </div>
+
+      <div class="balance-card">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+        <div class="inner">
+          <div class="live-badge">
+            <div class="live-dot"></div>
+            <span>Live Balance</span>
+          </div>
+          <div class="balance-amount" id="balance-display">₦0</div>
+          <p class="balance-sub">Earnings from investments &amp; blogs</p>
+          <div id="goal-progress-wrap" style="display:none">
+            <div class="goal-bar-label">
+              <span id="goal-bar-label">Goal</span>
+              <span class="pct" id="goal-bar-pct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="goal-bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="active-inv-section" style="margin-bottom:24px;display:none">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:14px">Active Investments</h2>
+        <div id="active-inv-list" class="investments-list"></div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="quick-card" onclick="switchTab('invest',null)">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          <div class="title">New Investment</div>
+          <div class="desc">Choose a package</div>
+        </button>
+        <button class="quick-card" onclick="switchTab('blog',null)">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <div class="title">Read &amp; Earn</div>
+          <div class="desc" id="qa-blog-desc">5 articles available</div>
+        </button>
+        <button class="quick-card" onclick="switchTab('goal',null)">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <div class="title">Set Goal</div>
+          <div class="desc">Track your targets</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== INVEST TAB ===== -->
+    <div id="tab-invest" class="dash-tab">
+      <div class="tab-header">
+        <h2>Choose a Package</h2>
+        <p>Select your investment amount. Returns are paid within 2 hours.</p>
+      </div>
+      <div id="invest-success" class="success-banner">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Investment submitted! It will be processed within 2 hours.
+      </div>
+      <div class="pkg-grid" id="pkg-grid"></div>
+    </div>
+
+    <!-- ===== BLOG TAB ===== -->
+    <div id="tab-blog" class="dash-tab">
+      <div class="tab-header">
+        <h2>Read Articles &amp; Earn</h2>
+        <p>Read financial articles to earn bonus rewards. Resets every day.</p>
+      </div>
+      <div class="blog-list" id="blog-list"></div>
+    </div>
+
+    <!-- ===== GOAL TAB ===== -->
+    <div id="tab-goal" class="dash-tab">
+      <div class="goal-content">
+        <div class="tab-header">
+          <h2>Investment Goal</h2>
+          <p>Set your wealth target and track your progress as your balance grows.</p>
+        </div>
+
+        <div id="goal-current-wrap" class="goal-current" style="display:none">
+          <div class="goal-label-row">
+            <span id="goal-name-display">Goal</span>
+            <span class="pct" id="goal-pct-display">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="goal-pct-fill" style="width:0%"></div>
+          </div>
+          <div class="goal-amounts">
+            <span class="saved" id="goal-saved-display">₦0 saved</span>
+            <span class="target" id="goal-target-display">Goal: ₦0</span>
+          </div>
+          <div class="milestones" id="milestones"></div>
+        </div>
+
+        <div class="goal-form">
+          <h3 id="goal-form-title">Set Your Goal</h3>
+          <div class="goal-form-fields">
+            <div class="form-group">
+              <label for="goal-label-input">Goal Label</label>
+              <input id="goal-label-input" type="text" placeholder='e.g. "Car fund", "School fees"' />
+            </div>
+            <div class="form-group">
+              <label for="goal-amount-input">Target Amount (₦)</label>
+              <input id="goal-amount-input" type="number" placeholder="e.g. 500000" min="1000" required />
+            </div>
+            <button class="goal-save-btn" id="goal-save-btn" onclick="saveGoal()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              Save Goal
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== CONFIRM MODAL ===== -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    </div>
+    <h3>Confirm Investment</h3>
+    <p>You're about to invest in the <strong id="modal-pkg-name">—</strong> package.</p>
+    <div class="modal-details">
+      <div class="modal-row"><span>Package</span>  <span id="md-pkg">—</span></div>
+      <div class="modal-row"><span>Amount</span>   <span id="md-amt">—</span></div>
+      <div class="modal-row"><span>Return</span>   <span id="md-ret" class="accent">—</span></div>
+      <div class="modal-row"><span>Payout in</span><span>2 Hours</span></div>
+    </div>
+    <button class="modal-confirm" onclick="confirmInvest()">Invest Now</button>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="dashboard.js"></script>
+<!-- Avatar sync is handled inside dashboard.js _bootDashboard() -->
+</body>
+</html>
