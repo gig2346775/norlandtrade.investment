@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Laurel wreath branches (simplified) -->
+  <g stroke="#93c5fd" stroke-width="1.2" fill="none" opacity="0.8">
+    <!-- Left branch -->
+    <path d="M10 38 Q8 30 12 24" stroke-linecap="round"/>
+    <path d="M11 34 Q6 30 9 24" stroke-linecap="round"/>
+    <path d="M13 40 Q7 36 8 28" stroke-linecap="round"/>
+    <!-- Right branch -->
+    <path d="M54 38 Q56 30 52 24" stroke-linecap="round"/>
+    <path d="M53 34 Q58 30 55 24" stroke-linecap="round"/>
+    <path d="M51 40 Q57 36 56 28" stroke-linecap="round"/>
+  </g>
+  <!-- Stars circle (top) -->
+  <g fill="#60a5fa" opacity="0.9">
+    <circle cx="32" cy="8" r="1.5"/>
+    <circle cx="26" cy="10" r="1.2"/>
+    <circle cx="38" cy="10" r="1.2"/>
+    <circle cx="20" cy="14" r="1"/>
+    <circle cx="44" cy="14" r="1"/>
+  </g>
+  <!-- Lion/shield body simplified as bold N letter centered -->
+  <text x="32" y="44" font-family="Georgia, serif" font-size="26" font-weight="700" fill="white" text-anchor="middle" letter-spacing="-1">N</text>
+  <!-- Cross at bottom -->
+  <g stroke="#60a5fa" stroke-width="1.5" fill="none">
+    <line x1="29" y1="52" x2="35" y2="52"/>
+    <line x1="32" y1="49" x2="32" y2="55"/>
+  </g>
+</svg>

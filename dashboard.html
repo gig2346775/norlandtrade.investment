@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Norland Investment</title>
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- PAGE LOADER -->
+<div id="page-loader" aria-hidden="true">
+  <div class="loader-inner">
+    <div class="loader-logo">
+      <img src="logo.png" alt="Norland" style="width:56px;height:56px;object-fit:contain;border-radius:8px;" />
+    </div>
+    <div class="loader-brand">NORLAND</div>
+    <div class="loader-sub">Investment Platform</div>
+    <div class="loader-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<div class="dashboard-page">
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.png" alt="Norland" class="sidebar-logo-img" />
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-text-main">NORLAND</div>
+        <div class="sidebar-logo-text-sub">Investment</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="active" onclick="switchTab('overview',this)" data-tab="overview">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Overview</span>
+      </button>
+      <button onclick="switchTab('invest',this)" data-tab="invest">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Invest</span>
+      </button>
+      <button onclick="switchTab('affiliate',this)" data-tab="affiliate">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Affiliate</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="sidebar-avatar" id="sidebar-avatar">--</div>
+        <div class="sidebar-user-text">
+          <div class="name" id="sidebar-name">—</div>
+          <div class="email" id="sidebar-email">—</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="dash-main">
+
+    <!-- Mobile top bar -->
+    <div class="dash-topbar">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="dash-topbar-logo">
+        <img src="logo.png" alt="Norland" style="width:30px;height:30px;object-fit:contain;border-radius:6px;" />
+        <span style="font-family:var(--font-serif);font-weight:700;font-size:1rem">NORLAND</span>
+      </div>
+      <div id="topbar-avatar" class="sidebar-avatar" style="margin-left:auto">--</div>
+    </div>
+
+    <!-- ===== OVERVIEW TAB ===== -->
+    <div id="tab-overview" class="dash-tab active">
+
+      <!-- Action pills -->
+      <div class="ov-action-row">
+        <button class="ov-pill" onclick="switchTab('invest', document.querySelector('[data-tab=invest]'))">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Deposit
+        </button>
+        <button class="ov-pill" onclick="showWithdrawModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Withdraw
+        </button>
+      </div>
+
+      <!-- Hero card stack -->
+      <div class="ov-card-stack">
+        <div class="ov-card-back">
+          <div class="ov-back-left">
+            <div class="ov-hero-avatar" id="ov-avatar">--</div>
+            <div>
+              <div class="ov-welcome-label">Welcome back,</div>
+              <div class="ov-welcome-name" id="ov-name">—</div>
+            </div>
+          </div>
+          <div class="ov-ngn-badge"><span>🇳🇬</span> NGN</div>
+        </div>
+        <div class="ov-card-front">
+          <div class="ov-card-front-inner">
+            <div class="ov-earnings-label">
+              Wallet Balance
+              <span class="ov-wallet-badge">Used to buy packages</span>
+            </div>
+            <div class="ov-balance-row">
+              <div class="ov-balance-num" id="ov-balance">0.00</div>
+              <div class="ov-balance-cur">ngn</div>
+            </div>
+            <div class="ov-card-actions">
+              <button class="ov-withdraw-btn" onclick="switchTab('invest', document.querySelector('[data-tab=invest]'))">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Deposit
+              </button>
+              <div class="ov-card-right-btns">
+                <button class="ov-view-btn" onclick="switchTab('invest', document.querySelector('[data-tab=invest]'))">View Packages</button>
+                <button class="ov-up-btn" onclick="switchTab('affiliate', document.querySelector('[data-tab=affiliate]'))">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="ov-card-dots">
+              <span class="ov-dot"></span><span class="ov-dot"></span><span class="ov-dot"></span><span class="ov-dot active"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat strip -->
+      <div class="ov-stat-strip">
+        <div class="ov-stat-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div>
+            <div class="ov-stat-lbl">Active Inv.</div>
+            <div class="ov-stat-val" id="ov-active-count">0</div>
+          </div>
+        </div>
+        <div class="ov-stat-divider"></div>
+        <div class="ov-stat-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <div><div class="ov-stat-lbl">Total Earned</div><div class="ov-stat-val" id="ov-earned">₦0</div></div>
+        </div>
+        <div class="ov-stat-divider"></div>
+        <div class="ov-stat-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <div><div class="ov-stat-lbl">Withdraw Avail.</div><div class="ov-stat-val" id="ov-withdraw">₦0</div></div>
+        </div>
+      </div>
+
+      <!-- Start Investing card -->
+      <div class="start-inv-card">
+        <div class="start-inv-left">
+          <div class="start-inv-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          <div>
+            <div class="start-inv-title">Start Investing Today</div>
+            <div class="start-inv-sub">Choose a package and double your money in 2 hours</div>
+          </div>
+        </div>
+        <button class="start-inv-btn" onclick="switchTab('invest', document.querySelector('[data-tab=invest]'))">
+          Invest Now
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+
+      <!-- Active investments -->
+      <div id="active-inv-section" style="display:none;margin-top:20px">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+          <span class="live-dot" style="display:inline-block"></span>
+          Active Investments
+        </h2>
+        <div id="active-inv-list" class="investments-list"></div>
+      </div>
+    </div>
+
+    <!-- ===== INVEST TAB ===== -->
+    <div id="tab-invest" class="dash-tab">
+      <div class="tab-header">
+        <h2>Choose a Package</h2>
+        <p>Select your investment amount. Returns are paid within 2 hours.</p>
+      </div>
+
+      <!-- Wallet balance bar on invest tab -->
+      <div class="invest-wallet-bar">
+        <div class="invest-wallet-left">
+          <div class="invest-wallet-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div>
+            <div class="invest-wallet-lbl">Your Wallet Balance</div>
+            <div class="invest-wallet-amt" id="invest-wallet-display">₦0</div>
+          </div>
+        </div>
+        <div class="invest-wallet-right">
+          <div class="invest-wallet-hint">Tap a package to invest</div>
+        </div>
+      </div>
+
+      <!-- Info strip -->
+      <div class="invest-info-strip">
+        <div class="invest-info-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Payout in <strong>2 hours</strong></span>
+        </div>
+        <div class="invest-info-sep">•</div>
+        <div class="invest-info-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <span><strong>200% ROI</strong> guaranteed</span>
+        </div>
+        <div class="invest-info-sep">•</div>
+        <div class="invest-info-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <span><strong>12 packages</strong> available</span>
+        </div>
+      </div>
+
+      <div id="invest-success" class="success-banner">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Investment submitted! It will be processed within 2 hours.
+      </div>
+      <div class="pkg-grid" id="pkg-grid"></div>
+    </div>
+
+    <!-- ===== AFFILIATE TAB ===== -->
+    <div id="tab-affiliate" class="dash-tab">
+      <div class="tab-header">
+        <h2>Affiliate Program</h2>
+        <p>Invite friends with your unique code. Earn <strong style="color:#60a5fa">₦5,000,000</strong> for every 15 people who join using your link.</p>
+      </div>
+
+      <!-- How it works banner -->
+      <div class="aff-how-card">
+        <div class="aff-how-step">
+          <div class="aff-step-num">1</div>
+          <div class="aff-step-text">Copy your unique referral link or code</div>
+        </div>
+        <div class="aff-how-arrow">›</div>
+        <div class="aff-how-step">
+          <div class="aff-step-num">2</div>
+          <div class="aff-step-text">Share it with friends &amp; family</div>
+        </div>
+        <div class="aff-how-arrow">›</div>
+        <div class="aff-how-step">
+          <div class="aff-step-num">3</div>
+          <div class="aff-step-text">Earn ₦5M for every 15 who register</div>
+        </div>
+      </div>
+
+      <!-- Referral code card -->
+      <div class="aff-code-card">
+        <div class="aff-code-label">Your Affiliate Code</div>
+        <div class="aff-code-display" id="aff-code">NRL-——</div>
+        <div class="aff-code-actions">
+          <button class="aff-copy-btn" id="aff-copy-code-btn" onclick="copyCode()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Code
+          </button>
+          <button class="aff-share-btn" onclick="copyLink()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Copy Link
+          </button>
+        </div>
+        <div class="aff-link-preview" id="aff-link-preview">login.html?ref=NRL-——</div>
+      </div>
+
+      <!-- Progress card -->
+      <div class="aff-progress-card">
+        <div class="aff-progress-header">
+          <div>
+            <div class="aff-progress-title">Referral Progress</div>
+            <div class="aff-progress-sub">Next reward: <strong style="color:#60a5fa">₦5,000,000</strong> at <span id="aff-next-target">15</span> referrals</div>
+          </div>
+          <div class="aff-badge" id="aff-referral-count">
+            <span id="aff-count-num">0</span>
+            <span class="aff-badge-label">referred</span>
+          </div>
+        </div>
+        <div class="aff-progress-track">
+          <div class="aff-progress-fill" id="aff-progress-fill" style="width:0%"></div>
+        </div>
+        <div class="aff-progress-labels">
+          <span id="aff-progress-in-batch">0 / 15 in this batch</span>
+          <span id="aff-progress-pct">0%</span>
+        </div>
+      </div>
+
+      <!-- Earnings card -->
+      <div class="aff-earnings-grid">
+        <div class="aff-earn-card">
+          <div class="aff-earn-icon aff-earn-icon--green">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="aff-earn-lbl">Total Referrals</div>
+          <div class="aff-earn-val" id="aff-total-refs">0</div>
+        </div>
+        <div class="aff-earn-card">
+          <div class="aff-earn-icon aff-earn-icon--blue">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div class="aff-earn-lbl">Batches Completed</div>
+          <div class="aff-earn-val" id="aff-batches">0</div>
+        </div>
+        <div class="aff-earn-card aff-earn-card--wide">
+          <div class="aff-earn-icon aff-earn-icon--gold">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
+          </div>
+          <div class="aff-earn-lbl">Total Affiliate Earnings</div>
+          <div class="aff-earn-val" id="aff-earnings-display">₦0</div>
+        </div>
+      </div>
+
+      <!-- Share via WhatsApp / Telegram -->
+      <div class="aff-share-card">
+        <div class="aff-share-title">Share your link directly</div>
+        <div class="aff-share-btns">
+          <a id="aff-wa-link" href="#" target="_blank" rel="noopener" class="aff-wa-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+            Share on WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== CONFIRM INVEST MODAL ===== -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    </div>
+    <h3>Confirm Investment</h3>
+    <p>You're about to invest in the <strong id="modal-pkg-name">—</strong> package.</p>
+    <div class="modal-details">
+      <div class="modal-row"><span>Package</span><span id="md-pkg">—</span></div>
+      <div class="modal-row"><span>Cost (from wallet)</span><span id="md-amt">—</span></div>
+      <div class="modal-row"><span>Return in 2 hrs</span><span id="md-ret" class="accent">—</span></div>
+      <div class="modal-row modal-row--wallet"><span>Wallet before</span><span id="md-wallet" style="color:var(--text-muted)">—</span></div>
+      <div class="modal-row modal-row--wallet"><span>Wallet after</span><span id="md-after" style="color:#f59e0b">—</span></div>
+    </div>
+    <div id="modal-error" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;color:#f87171;font-size:.82rem;margin-bottom:12px;text-align:center"></div>
+    <button class="modal-confirm" onclick="confirmInvest()">Invest Now — Deduct from Wallet</button>
+  </div>
+</div>
+
+<!-- ===== INSUFFICIENT FUNDS MODAL ===== -->
+<div class="modal-overlay" id="insuf-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeInsufficientModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-icon modal-icon--warn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <h3>Insufficient Wallet Balance</h3>
+    <p>You don't have enough funds to buy the <strong id="insuf-pkg-name">—</strong> package.</p>
+    <div class="modal-details">
+      <div class="modal-row"><span>Package Cost</span><span id="insuf-pkg-cost" style="color:#f59e0b">—</span></div>
+      <div class="modal-row"><span>Your Wallet</span><span id="insuf-current" style="color:#ef4444">—</span></div>
+      <div class="modal-row modal-row--highlight"><span>You Need</span><span id="insuf-needed" style="color:#60a5fa;font-weight:700">—</span></div>
+    </div>
+    <p class="insuf-contact-note">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      To fund your wallet, contact customer care on WhatsApp.
+    </p>
+    <div class="insuf-actions">
+      <button class="insuf-contact-btn" onclick="window.open('https://chat.whatsapp.com/IY9D9ewjibeFmv7RfmF0cu?s=sw&p=i&ilr=0','_blank')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+        Contact Customer Care
+      </button>
+      <button class="insuf-cancel-btn" onclick="closeInsufficientModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WITHDRAW MODAL ===== -->
+<div class="modal-overlay" id="withdraw-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('withdraw-modal').classList.remove('show')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-icon" style="background:rgba(59,130,246,.12)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
+    <h3>Withdraw Funds</h3>
+    <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:20px">Available balance: <strong id="wd-balance" style="color:#60a5fa">₦0</strong></p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <div class="form-group">
+        <label style="font-size:.82rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Amount (₦)</label>
+        <input id="wd-amount" type="number" placeholder="Enter amount to withdraw" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:.9rem;outline:none;width:100%;font-family:inherit" />
+      </div>
+      <div class="form-group">
+        <label style="font-size:.82rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Account Number</label>
+        <input id="wd-account" type="text" placeholder="Your bank account number" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:.9rem;outline:none;width:100%;font-family:inherit" />
+      </div>
+      <div class="form-group">
+        <label style="font-size:.82rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Bank Name</label>
+        <input id="wd-bank" type="text" placeholder="e.g. First Bank, GTB" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:.9rem;outline:none;width:100%;font-family:inherit" />
+      </div>
+    </div>
+    <div id="wd-error" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;color:#f87171;font-size:.85rem;display:none;margin-bottom:16px"></div>
+    <div id="wd-success" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:10px 14px;color:#4ade80;font-size:.85rem;display:none;margin-bottom:16px"></div>
+    <button class="modal-confirm" id="wd-submit-btn" onclick="submitWithdraw()">Submit Withdrawal Request</button>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="dashboard.js"></script>
+
+<!-- Community modal -->
+<div class="community-overlay" id="community-modal" onclick="closeCommunityModal(event)">
+  <div class="community-box">
+    <button class="community-close" onclick="document.getElementById('community-modal').classList.remove('active')" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="community-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="community-dot"></span>
+    </div>
+    <h3 class="community-title">Join the community</h3>
+    <p class="community-sub">Join our WhatsApp group for instant updates, tips, and payout alerts.</p>
+    <div class="community-links">
+      <a href="https://chat.whatsapp.com/IY9D9ewjibeFmv7RfmF0cu?s=swhttps://chat.whatsapp.com/YOUR_GROUP_LINKp=ihttps://chat.whatsapp.com/YOUR_GROUP_LINKilr=0" target="_blank" rel="noopener" class="community-link community-link--wa">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+        <span>WhatsApp Group</span>
+        <svg class="community-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+    <p class="community-footer">Already joined over 50k+ earners</p>
+  </div>
+</div>
+
+<button class="wa-fab" onclick="window.open('https://chat.whatsapp.com/IY9D9ewjibeFmv7RfmF0cu?s=sw&p=i&ilr=0','_blank')" aria-label="Join Community">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+  <span class="wa-fab-label">Community</span>
+</button>
+
+<script>
+function closeCommunityModal(e) {
+  if (e.target === document.getElementById('community-modal')) {
+    document.getElementById('community-modal').classList.remove('active');
+  }
+}
+function showWithdrawModal() {
+  const user = Auth.getUser();
+  if (user) document.getElementById('wd-balance').textContent = fmt(user.balance || 0);
+  document.getElementById('wd-error').style.display = 'none';
+  document.getElementById('wd-success').style.display = 'none';
+  document.getElementById('wd-amount').value = '';
+  document.getElementById('wd-account').value = '';
+  document.getElementById('wd-bank').value = '';
+  document.getElementById('withdraw-modal').classList.add('show');
+}
+function submitWithdraw() {
+  const user    = Auth.getUser();
+  const amount  = Number(document.getElementById('wd-amount').value);
+  const account = document.getElementById('wd-account').value.trim();
+  const bank    = document.getElementById('wd-bank').value.trim();
+  const errEl   = document.getElementById('wd-error');
+  const okEl    = document.getElementById('wd-success');
+  errEl.style.display = 'none'; okEl.style.display = 'none';
+  if (!amount || amount < 100)        { errEl.textContent = 'Please enter a valid amount (min ₦100).'; errEl.style.display='block'; return; }
+  if (!user || amount > (user.balance||0)) { errEl.textContent = 'Insufficient balance.'; errEl.style.display='block'; return; }
+  if (!account) { errEl.textContent = 'Please enter your account number.'; errEl.style.display='block'; return; }
+  if (!bank)    { errEl.textContent = 'Please enter your bank name.';      errEl.style.display='block'; return; }
+  const btn = document.getElementById('wd-submit-btn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  setTimeout(() => {
+    okEl.textContent = `Withdrawal of ${fmt(amount)} submitted! Will be sent to ${bank} — ${account} within 24 hours.`;
+    okEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Submit Withdrawal Request';
+    setTimeout(() => document.getElementById('withdraw-modal').classList.remove('show'), 3500);
+  }, 1200);
+}
+document.getElementById('withdraw-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
+document.getElementById('insuf-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeInsufficientModal();
+});
+</script>
+</body>
+</html>
